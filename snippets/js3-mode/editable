@@ -1,0 +1,22 @@
+# -*- mode: snippet; -*-
+# name: editable
+# --
+define([
+    'views/components/input/editable'
+], function(Editable){
+    var $1 = Editable.extend({
+        initialize: function(opts){
+            Editable.prototype.initialize.apply(this, arguments);
+
+            $0
+        },
+        render: function(){
+            Editable.prototype.render.apply(this, arguments);
+        },
+        value: function(){
+            
+        }
+    });
+
+    return $1;
+});
