@@ -1,0 +1,13 @@
+# -*- mode: snippet; -*-
+# name: view
+# --
+var $1 = Backbone.View.extend({
+    initialize: function(){
+        this.render();
+    },
+    render: function(){
+        $0
+    }
+});
+
+return $1;

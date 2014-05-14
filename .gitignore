@@ -1,0 +1,8 @@
+*elc
+.DS_Store
+*.tar
+elpa
+*cache
+*eld
+auto-save-list
+ac-comphist.dat
