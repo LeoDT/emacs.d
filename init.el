@@ -188,7 +188,7 @@
  '(bmkp-last-as-first-bookmark-file "~/.emacs.d/bookmarks")
  '(column-number-mode 1)
  '(display-time-mode t)
- '(ibuffer-saved-filter-groups (quote (("datayes" ("yestrap" (filename . "yestrap")) ("docs" (filename . "doc")) ("heel" (filename . "heel")) ("zeus" (filename . "zeus")) ("dol" (filename . "dol"))))))
+ '(ibuffer-saved-filter-groups (quote (("datayes" ("achy" (filename . "achy")) ("yestrap" (filename . "yestrap")) ("docs" (filename . "doc")) ("heel" (filename . "heel")) ("zeus" (filename . "zeus")) ("dol" (filename . "dol"))))))
  '(ibuffer-saved-filters (quote (("gnus" ((or (mode . message-mode) (mode . mail-mode) (mode . gnus-group-mode) (mode . gnus-summary-mode) (mode . gnus-article-mode)))) ("programming" ((or (mode . emacs-lisp-mode) (mode . cperl-mode) (mode . c-mode) (mode . java-mode) (mode . idl-mode) (mode . lisp-mode)))))))
  '(js3-boring-indentation t)
  '(show-paren-mode t)
