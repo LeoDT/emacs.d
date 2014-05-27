@@ -7,3 +7,5 @@ elpa
 auto-save-list
 ac-comphist.dat
 eshell
+
+heel.el

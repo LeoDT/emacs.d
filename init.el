@@ -30,6 +30,9 @@
 
 (setq column-number-mode 1)
 
+; file path or buffer name
+(setq-default frame-title-format '(buffer-file-name "%f" "%b"))
+
 (setq
    backup-by-copying t      ; don't clobber symlinks
    backup-directory-alist
@@ -180,6 +183,8 @@
                       (imenu-add-menubar-index)
                       (hs-minor-mode t)))
 
+(load-file "~/.emacs.d/heel.el")
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -188,7 +193,7 @@
  '(bmkp-last-as-first-bookmark-file "~/.emacs.d/bookmarks")
  '(column-number-mode 1)
  '(display-time-mode t)
- '(ibuffer-saved-filter-groups (quote (("datayes" ("achy" (filename . "achy")) ("yestrap" (filename . "yestrap")) ("docs" (filename . "doc")) ("heel" (filename . "heel")) ("zeus" (filename . "zeus")) ("dol" (filename . "dol"))))))
+ '(ibuffer-saved-filter-groups (quote (("datayes" ("cr" (filename . "/cr/")) ("achy" (filename . "achy")) ("yestrap" (filename . "yestrap")) ("docs" (filename . "doc")) ("heel" (filename . "heel")) ("zeus" (filename . "zeus"))))))
  '(ibuffer-saved-filters (quote (("gnus" ((or (mode . message-mode) (mode . mail-mode) (mode . gnus-group-mode) (mode . gnus-summary-mode) (mode . gnus-article-mode)))) ("programming" ((or (mode . emacs-lisp-mode) (mode . cperl-mode) (mode . c-mode) (mode . java-mode) (mode . idl-mode) (mode . lisp-mode)))))))
  '(js3-boring-indentation t)
  '(show-paren-mode t)
