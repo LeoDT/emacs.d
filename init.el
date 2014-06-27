@@ -83,12 +83,19 @@
                       multiple-cursors
                       web-mode
                       magit
+                      recentf-ext
                       )
   "A list of packages to ensure are installed at launch.")
 
 (dolist (p my-packages)
   (when (not (package-installed-p p))
     (package-install p)))
+
+(require 'recentf)
+(recentf-mode 1)
+(global-set-key "\C-xf" 'recentf-open-files)
+(setq recentf-auto-cleanup 'never)
+(require 'recentf-ext)
 
 (require 'auto-complete)
 (require 'auto-complete-config)
