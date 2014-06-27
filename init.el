@@ -131,6 +131,11 @@
 (setq-default js3-indent-level 4)
 ;; (setq-default js3-indent-on-enter-key 1)
 (setq-default js3-consistent-level-indent-inner-bracket 1)
+(setq-default js3-additional-externs '(
+                              "console"
+                              "define"
+                              "require"
+                              ))
 
 ;; web dev
 (require 'emmet-mode)
@@ -176,7 +181,11 @@
                       (hs-minor-mode t)))
 
 
-(require 'base16-eighties-theme)
+;; (require 'base16-eighties-theme)
+(load-theme 'soothe t)
+
+(require 'powerline)
+(powerline-center-theme)
 
 (load-file "~/.emacs.d/heel.el")
 (load-file "~/.emacs.d/myjira.el")
@@ -206,4 +215,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(mode-line ((t (:background "#141414" :foreground "#828282" :box nil :height 120)))))
