@@ -81,7 +81,7 @@
                       bookmark+
                       base16-theme
                       multiple-cursors
-                      projectile
+                      web-mode
                       magit
                       )
   "A list of packages to ensure are installed at launch.")
@@ -139,32 +139,24 @@
 (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 4)))
 (setq emmet-move-cursor-between-quotes t)
 
-;; (add-to-list 'auto-mode-alist '("\\.hbs\\'" . web-mode))
-;; (defun web-mode-hook ()
-;;   "Hooks for Web mode."
-;;   (setq web-mode-markup-indent-offset 4)
-;; )
-;; (add-hook 'web-mode-hook  'web-mode-hook)
+;; for web mode
+(add-to-list 'auto-mode-alist '("\\.hbs\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.tpl\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+(defun my-web-mode-hook ()
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 4)
+  (setq web-mode-css-indent-offset 4)
+  (setq web-mode-code-indent-offset 4)
+)
+(add-hook 'web-mode-hook  'my-web-mode-hook)
+(add-hook 'web-mode-hook 'emmet-mode)
 
 (setq sgml-basic-offset 4)
-(add-to-list 'auto-mode-alist '("\\.hbs\\'" . sgml-mode))
-(add-to-list 'auto-mode-alist '("\\.ejs\\'" . sgml-mode))
 
-(projectile-global-mode)
-
-(require 'base16-eighties-theme)
-
-(setq sr-speedbar-right-side nil)
-(setq speedbar-use-images nil)
-(setq sr-speedbar-max-width 26)
-(setq sr-speedbar-width-x 22)
-
-(make-face 'speedbar-face)
-(set-face-font 'speedbar-face "Inconsolata 12")
-(setq speedbar-mode-hook '(lambda () (buffer-face-set 'speedbar-face)))
-
-;; (require 'indent-guide)
-;; (indent-guide-global-mode)
+(require 'indent-guide)
+(indent-guide-global-mode)
 
 (require 'bookmark+)
 
@@ -183,7 +175,11 @@
                       (imenu-add-menubar-index)
                       (hs-minor-mode t)))
 
+
+(require 'base16-eighties-theme)
+
 (load-file "~/.emacs.d/heel.el")
+(load-file "~/.emacs.d/myjira.el")
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -192,11 +188,17 @@
  ;; If there is more than one, they won't work right.
  '(bmkp-last-as-first-bookmark-file "~/.emacs.d/bookmarks")
  '(column-number-mode 1)
+ '(confluence-default-space-alist (list (cons confluence-url "f2e")))
+ '(confluence-url "http://confluence.datayes.com/rpc/xmlrpc")
  '(display-time-mode t)
- '(ibuffer-saved-filter-groups (quote (("datayes" ("cr" (filename . "/cr/")) ("achy" (filename . "achy")) ("yestrap" (filename . "yestrap")) ("docs" (filename . "doc")) ("heel" (filename . "heel")) ("zeus" (filename . "zeus"))))))
+ '(face-font-family-alternatives (quote (("arial black" "arial" "DejaVu Sans") ("arial" "DejaVu Sans") ("verdana" "DejaVu Sans"))))
+ '(font-lock-keywords-case-fold-search t t)
+ '(global-font-lock-mode t nil (font-lock))
+ '(ibuffer-saved-filter-groups (quote (("datayes" ("cr" (filename . "/cr/")) ("achy" (filename . "achy")) ("yestrap" (filename . "yestrap")) ("docs" (filename . "doc")) ("heel" (filename . "heel"))))))
  '(ibuffer-saved-filters (quote (("gnus" ((or (mode . message-mode) (mode . mail-mode) (mode . gnus-group-mode) (mode . gnus-summary-mode) (mode . gnus-article-mode)))) ("programming" ((or (mode . emacs-lisp-mode) (mode . cperl-mode) (mode . c-mode) (mode . java-mode) (mode . idl-mode) (mode . lisp-mode)))))))
  '(js3-boring-indentation t)
  '(show-paren-mode t)
+ '(show-trailing-whitespace t)
  '(sr-speedbar-auto-refresh nil)
  '(tool-bar-mode nil))
 (custom-set-faces
