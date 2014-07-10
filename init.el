@@ -45,14 +45,14 @@
 (setq-default indent-tabs-mode nil)
 (setq-default tab-always-indent 0)
 (setq-default tab-width 4)
+(add-hook 'before-save-hook 'whitespace-cleanup)
 
 ;; (global-linum-mode 1)
 
 ;;shortcut
 (global-set-key (kbd "C-t") 'set-mark-command)
 (global-set-key (kbd "M-`") 'next-multiframe-window)
-
-;;font
+;;font≈
 (prefer-coding-system 'utf-8)
 (set-default-font "Inconsolata 14")
 (set-fontset-font "fontset-default" 'unicode "Hiragino Sans GB 14")
@@ -96,6 +96,8 @@
 (global-set-key "\C-xf" 'recentf-open-files)
 (setq recentf-auto-cleanup 'never)
 (require 'recentf-ext)
+
+(desktop-save-mode 1)
 
 (require 'auto-complete)
 (require 'auto-complete-config)
