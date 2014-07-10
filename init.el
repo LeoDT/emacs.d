@@ -84,6 +84,7 @@
                       web-mode
                       magit
                       recentf-ext
+                      ido-vertical-mode
                       )
   "A list of packages to ensure are installed at launch.")
 
@@ -96,8 +97,6 @@
 (global-set-key "\C-xf" 'recentf-open-files)
 (setq recentf-auto-cleanup 'never)
 (require 'recentf-ext)
-
-(desktop-save-mode 1)
 
 (require 'auto-complete)
 (require 'auto-complete-config)
@@ -124,6 +123,9 @@
 
 (require 'ido)
 (ido-mode t)
+(require 'ido-vertical-mode)
+(ido-vertical-mode 1)
+
 (require 'flx-ido)
 (flx-ido-mode 1)
 (setq ido-use-faces nil)
@@ -195,6 +197,11 @@
 
 (require 'powerline)
 (powerline-center-theme)
+
+(require 'workgroups2)
+(setq wg-prefix-key (kbd "C-c \\"))
+(setq wg-default-session-file "~/.emacs.d/.emacs_workgroups")
+(workgroups-mode 1)
 
 (load-file "~/.emacs.d/heel.el")
 (load-file "~/.emacs.d/myjira.el")
