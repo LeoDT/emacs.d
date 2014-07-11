@@ -85,6 +85,7 @@
                       magit
                       recentf-ext
                       ido-vertical-mode
+                      kill-ring-ido
                       )
   "A list of packages to ensure are installed at launch.")
 
@@ -194,6 +195,10 @@
 
 ;; (require 'base16-eighties-theme)
 (load-theme 'soothe t)
+
+(require 'kill-ring-ido)
+(global-set-key (kbd "M-y") 'kill-ring-ido)
+(setq kill-ring-ido-shortage-length 18)
 
 (require 'powerline)
 (powerline-center-theme)
