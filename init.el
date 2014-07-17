@@ -208,6 +208,11 @@
 (setq wg-default-session-file "~/.emacs.d/.emacs_workgroups")
 (workgroups-mode 1)
 
+(require 'magit)
+(set-variable 'magit-emacsclient-executable "/Applications/Emacs.app/Contents/MacOS/bin/emacsclient")
+(require 'magit-gitflow)
+(add-hook 'magit-mode-hook 'turn-on-magit-gitflow)
+
 (load-file "~/.emacs.d/heel.el")
 (load-file "~/.emacs.d/myjira.el")
 
@@ -224,7 +229,7 @@
  '(face-font-family-alternatives (quote (("arial black" "arial" "DejaVu Sans") ("arial" "DejaVu Sans") ("verdana" "DejaVu Sans"))))
  '(font-lock-keywords-case-fold-search t t)
  '(global-font-lock-mode t nil (font-lock))
- '(ibuffer-saved-filter-groups (quote (("datayes" ("cr" (filename . "/cr/")) ("achy" (filename . "achy")) ("yestrap" (filename . "yestrap")) ("docs" (filename . "doc")) ("heel" (filename . "heel"))))))
+ '(ibuffer-saved-filter-groups (quote (("datayes" ("mercury" (filename . "mercury")) ("cr" (filename . "/cr/")) ("achy" (filename . "achy")) ("yestrap" (filename . "yestrap")) ("docs" (filename . "doc")) ("heel" (filename . "heel"))))))
  '(ibuffer-saved-filters (quote (("gnus" ((or (mode . message-mode) (mode . mail-mode) (mode . gnus-group-mode) (mode . gnus-summary-mode) (mode . gnus-article-mode)))) ("programming" ((or (mode . emacs-lisp-mode) (mode . cperl-mode) (mode . c-mode) (mode . java-mode) (mode . idl-mode) (mode . lisp-mode)))))))
  '(js3-boring-indentation t)
  '(show-paren-mode t)
