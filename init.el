@@ -212,6 +212,7 @@
 (set-variable 'magit-emacsclient-executable "/Applications/Emacs.app/Contents/MacOS/bin/emacsclient")
 (require 'magit-gitflow)
 (add-hook 'magit-mode-hook 'turn-on-magit-gitflow)
+(add-hook 'magit-mode-hook 'turn-on-magit-svn)
 
 (load-file "~/.emacs.d/heel.el")
 (load-file "~/.emacs.d/myjira.el")
