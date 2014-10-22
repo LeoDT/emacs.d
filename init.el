@@ -86,6 +86,10 @@
                       recentf-ext
                       ido-vertical-mode
                       kill-ring-ido
+                      hungry-delete
+                      powerline
+                      zoom-frm
+                      subatomic-theme
                       )
   "A list of packages to ensure are installed at launch.")
 
@@ -104,6 +108,9 @@
 (ac-config-default)
 (add-to-list 'ac-modes 'less-css-mode)
 (add-hook 'less-css-mode-hook 'ac-css-mode-setup)
+
+;; (require 'company)
+;; (add-hook 'after-init-hook 'global-company-mode)
 
 (require 'yasnippet)
 (yas/global-mode 1)
@@ -147,6 +154,9 @@
                               "console"
                               "define"
                               "require"
+                              "module"
+                              "global"
+                              "process"
                               ))
 
 ;; web dev
@@ -194,25 +204,47 @@
 
 
 ;; (require 'base16-eighties-theme)
-(load-theme 'soothe t)
+;; (load-theme 'soothe t)
+(load-theme 'subatomic t)
 
 (require 'kill-ring-ido)
 (global-set-key (kbd "M-y") 'kill-ring-ido)
 (setq kill-ring-ido-shortage-length 18)
 
-(require 'powerline)
-(powerline-center-theme)
+;;(require 'powerline)
+;;(powerline-center-theme)
 
-(require 'workgroups2)
-(setq wg-prefix-key (kbd "C-c \\"))
-(setq wg-default-session-file "~/.emacs.d/.emacs_workgroups")
-(workgroups-mode 1)
+;; (require 'workgroups2)
+;; (setq wg-prefix-key (kbd "C-c \\"))
+;; (setq wg-default-session-file "~/.emacs.d/.emacs_workgroups")
+;; (workgroups-mode 1)
 
 (require 'magit)
 (set-variable 'magit-emacsclient-executable "/Applications/Emacs.app/Contents/MacOS/bin/emacsclient")
 (require 'magit-gitflow)
 (add-hook 'magit-mode-hook 'turn-on-magit-gitflow)
 (add-hook 'magit-mode-hook 'turn-on-magit-svn)
+
+(require 'zoom-frm)
+(global-set-key (kbd "C-x C-=") 'zoom-in)
+(global-set-key (kbd "C-x C--") 'zoom-out)
+
+;; (require 'hungry-delete)
+;; (global-hungry-delete-mode)
+
+
+;; exit confirm
+(defun ask-before-closing ()
+  "Ask whether or not to close, and then close if y was pressed"
+  (interactive)
+  (if (y-or-n-p (format "Are you sure you want to exit Emacs? "))
+      (if (< emacs-major-version 22)
+          (save-buffers-kill-terminal)
+        (save-buffers-kill-emacs))
+    (message "Canceled exit")))
+
+(when window-system
+  (global-set-key (kbd "C-x C-c") 'ask-before-closing))
 
 (load-file "~/.emacs.d/heel.el")
 (load-file "~/.emacs.d/myjira.el")
@@ -226,12 +258,54 @@
  '(column-number-mode 1)
  '(confluence-default-space-alist (list (cons confluence-url "f2e")))
  '(confluence-url "http://confluence.datayes.com/rpc/xmlrpc")
+ '(custom-safe-themes
+   (quote
+    ("f9e975bdf5843982f4860b39b2409d7fa66afab3deb2616c41a403d788749628" default)))
  '(display-time-mode t)
- '(face-font-family-alternatives (quote (("arial black" "arial" "DejaVu Sans") ("arial" "DejaVu Sans") ("verdana" "DejaVu Sans"))))
+ '(face-font-family-alternatives
+   (quote
+    (("arial black" "arial" "DejaVu Sans")
+     ("arial" "DejaVu Sans")
+     ("verdana" "DejaVu Sans"))))
  '(font-lock-keywords-case-fold-search t t)
  '(global-font-lock-mode t nil (font-lock))
- '(ibuffer-saved-filter-groups (quote (("datayes" ("mercury" (filename . "mercury")) ("cr" (filename . "/cr/")) ("achy" (filename . "achy")) ("yestrap" (filename . "yestrap")) ("docs" (filename . "doc")) ("heel" (filename . "heel"))))))
- '(ibuffer-saved-filters (quote (("gnus" ((or (mode . message-mode) (mode . mail-mode) (mode . gnus-group-mode) (mode . gnus-summary-mode) (mode . gnus-article-mode)))) ("programming" ((or (mode . emacs-lisp-mode) (mode . cperl-mode) (mode . c-mode) (mode . java-mode) (mode . idl-mode) (mode . lisp-mode)))))))
+ '(ibuffer-saved-filter-groups
+   (quote
+    (("mercury"
+      ("data"
+       (filename . "\\/data\\/"))
+      ("notebook"
+       (filename . "notebook")))
+     ("datayes"
+      ("mercury"
+       (filename . "mercury"))
+      ("cr"
+       (filename . "/cr/"))
+      ("achy"
+       (filename . "achy"))
+      ("yestrap"
+       (filename . "yestrap"))
+      ("docs"
+       (filename . "doc"))
+      ("heel"
+       (filename . "heel"))))))
+ '(ibuffer-saved-filters
+   (quote
+    (("gnus"
+      ((or
+        (mode . message-mode)
+        (mode . mail-mode)
+        (mode . gnus-group-mode)
+        (mode . gnus-summary-mode)
+        (mode . gnus-article-mode))))
+     ("programming"
+      ((or
+        (mode . emacs-lisp-mode)
+        (mode . cperl-mode)
+        (mode . c-mode)
+        (mode . java-mode)
+        (mode . idl-mode)
+        (mode . lisp-mode)))))))
  '(js3-boring-indentation t)
  '(show-paren-mode t)
  '(show-trailing-whitespace t)
