@@ -1,3 +1,5 @@
+(setq magit-last-seen-setup-instructions "1.4.0")
+
 (tool-bar-mode 0)
 (menu-bar-mode 1)
 (setq inhibit-startup-message 1)
@@ -52,15 +54,26 @@
 ;;shortcut
 (global-set-key (kbd "C-t") 'set-mark-command)
 (global-set-key (kbd "M-`") 'next-multiframe-window)
-;;font≈
+;;font
 (prefer-coding-system 'utf-8)
-(set-default-font "Inconsolata 14")
+(set-default-font "Menlo 14")
 (set-fontset-font "fontset-default" 'unicode "Hiragino Sans GB 14")
+;;(load-file "~/.emacs.d/font.el")
+
+;;frame size
+(setq default-frame-alist
+      '(
+        (width . 80) ; character
+        (height . 40) ; lines
+        ))
+
+;;sys
+(add-to-list 'exec-path "/usr/local/bin")
 
 ;;Packages
 (require 'package)
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+             '("melpa" . "http://melpa.org/packages/") t)
 (add-to-list 'package-archives
              '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (package-initialize)
@@ -73,7 +86,7 @@
                       auto-complete
                       yasnippet
                       smex
-                      js3-mode
+                      js2-mode
                       emmet-mode
                       less-css-mode
                       flx-ido
@@ -113,7 +126,7 @@
 ;; (add-hook 'after-init-hook 'global-company-mode)
 
 (require 'yasnippet)
-(yas/global-mode 1)
+(yas-global-mode 1)
 
 (setq-default ac-sources '(
                            ac-source-yasnippet
@@ -143,21 +156,26 @@
 (global-set-key (kbd "M-x") 'smex)
 (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 
-(require 'js3-mode)
-(add-to-list 'ac-modes 'js3-mode)
-(setq-default js3-auto-indent-p 1)
-(setq-default js3-enter-indents-newline 1)
-(setq-default js3-indent-level 4)
-;; (setq-default js3-indent-on-enter-key 1)
-(setq-default js3-consistent-level-indent-inner-bracket 1)
-(setq-default js3-additional-externs '(
+(require 'js2-mode)
+(add-to-list 'ac-modes 'js2-mode)
+(setq js2-highlight-level 3)
+(setq-default js2-auto-indent-p 1)
+(setq-default js2-enter-indents-newline 1)
+(setq-default js2-indent-level 4)
+(setq-default js2-consistent-level-indent-inner-bracket 1)
+(setq-default js2-global-externs '(
                               "console"
                               "define"
                               "require"
                               "module"
                               "global"
                               "process"
+                              "$"
                               ))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+
+(require 'js2-refactor)
+(js2r-add-keybindings-with-prefix "C-c C-,")
 
 ;; web dev
 (require 'emmet-mode)
@@ -198,40 +216,27 @@
 (popwin-mode 1)
 
 ;; hs minor mode
-(add-hook 'js3-mode-hook (lambda()
+(add-hook 'js2-mode-hook (lambda()
                       (imenu-add-menubar-index)
                       (hs-minor-mode t)))
 
-
-;; (require 'base16-eighties-theme)
-;; (load-theme 'soothe t)
 (load-theme 'subatomic t)
 
 (require 'kill-ring-ido)
 (global-set-key (kbd "M-y") 'kill-ring-ido)
 (setq kill-ring-ido-shortage-length 18)
 
-;;(require 'powerline)
-;;(powerline-center-theme)
-
-;; (require 'workgroups2)
-;; (setq wg-prefix-key (kbd "C-c \\"))
-;; (setq wg-default-session-file "~/.emacs.d/.emacs_workgroups")
-;; (workgroups-mode 1)
-
 (require 'magit)
 (set-variable 'magit-emacsclient-executable "/Applications/Emacs.app/Contents/MacOS/bin/emacsclient")
+(setq magit-git-executable "/usr/local/bin/git")
 (require 'magit-gitflow)
 (add-hook 'magit-mode-hook 'turn-on-magit-gitflow)
-(add-hook 'magit-mode-hook 'turn-on-magit-svn)
 
 (require 'zoom-frm)
 (global-set-key (kbd "C-x C-=") 'zoom-in)
 (global-set-key (kbd "C-x C--") 'zoom-out)
 
-;; (require 'hungry-delete)
-;; (global-hungry-delete-mode)
-
+(projectile-global-mode)
 
 ;; exit confirm
 (defun ask-before-closing ()
@@ -260,7 +265,7 @@
  '(confluence-url "http://confluence.datayes.com/rpc/xmlrpc")
  '(custom-safe-themes
    (quote
-    ("f9e975bdf5843982f4860b39b2409d7fa66afab3deb2616c41a403d788749628" default)))
+    ("726dd9a188747664fbbff1cd9ab3c29a3f690a7b861f6e6a1c64462b64b306de" "40bc0ac47a9bd5b8db7304f8ef628d71e2798135935eb450483db0dbbfff8b11" "603a9c7f3ca3253cb68584cb26c408afcf4e674d7db86badcfe649dd3c538656" "9122dfb203945f6e84b0de66d11a97de6c9edf28b3b5db772472e4beccc6b3c5" "18a33cdb764e4baf99b23dcd5abdbf1249670d412c6d3a8092ae1a7b211613d5" "f9e975bdf5843982f4860b39b2409d7fa66afab3deb2616c41a403d788749628" default)))
  '(display-time-mode t)
  '(face-font-family-alternatives
    (quote
@@ -306,7 +311,11 @@
         (mode . java-mode)
         (mode . idl-mode)
         (mode . lisp-mode)))))))
- '(js3-boring-indentation t)
+ '(js2-include-browser-externs t)
+ '(js2-include-node-externs t)
+ '(package-selected-packages
+   (quote
+    (swiper hydra zoom-frm web-mode w3m w3 subatomic-theme sos smex recentf-ext powerline popwin noflet nginx-mode mustache-mode markdown-mode magit-gitflow lua-mode less-css-mode kill-ring-ido keyfreq jsx-mode json-mode js3-mode indent-guide ido-vertical-mode hungry-delete hackernews go-eldoc flx-ido emmet-mode company browse-kill-ring bookmark+ base16-theme auto-complete anaphora amd-mode ag)))
  '(show-paren-mode t)
  '(show-trailing-whitespace t)
  '(sr-speedbar-auto-refresh nil)
