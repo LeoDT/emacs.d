@@ -87,6 +87,9 @@
                       yasnippet
                       smex
                       js2-mode
+                      js2-refactor
+                      discover
+                      discover-js2-refactor
                       emmet-mode
                       less-css-mode
                       flx-ido
@@ -103,12 +106,17 @@
                       powerline
                       zoom-frm
                       subatomic-theme
+                      undo-tree
                       )
   "A list of packages to ensure are installed at launch.")
 
 (dolist (p my-packages)
   (when (not (package-installed-p p))
     (package-install p)))
+
+(require 'undo-tree)
+(global-undo-tree-mode 1)
+(global-set-key (kbd "C-?") 'undo-tree-redo)
 
 (require 'recentf)
 (recentf-mode 1)
@@ -175,7 +183,9 @@
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
 (require 'js2-refactor)
+(add-hook 'js2-mode-hook #'js2-refactor-mode)
 (js2r-add-keybindings-with-prefix "C-c C-,")
+(require 'discover-js2-refactor)
 
 ;; web dev
 (require 'emmet-mode)
@@ -315,7 +325,7 @@
  '(js2-include-node-externs t)
  '(package-selected-packages
    (quote
-    (swiper hydra zoom-frm web-mode w3m w3 subatomic-theme sos smex recentf-ext powerline popwin noflet nginx-mode mustache-mode markdown-mode magit-gitflow lua-mode less-css-mode kill-ring-ido keyfreq jsx-mode json-mode js3-mode indent-guide ido-vertical-mode hungry-delete hackernews go-eldoc flx-ido emmet-mode company browse-kill-ring bookmark+ base16-theme auto-complete anaphora amd-mode ag)))
+    (discover-js2-refactor undo-tree handlebars-sgml-mode swiper hydra zoom-frm web-mode w3m w3 subatomic-theme sos smex recentf-ext powerline popwin noflet nginx-mode mustache-mode markdown-mode magit-gitflow lua-mode less-css-mode kill-ring-ido keyfreq jsx-mode json-mode js3-mode indent-guide ido-vertical-mode hungry-delete hackernews go-eldoc flx-ido emmet-mode company browse-kill-ring bookmark+ base16-theme auto-complete anaphora amd-mode ag)))
  '(show-paren-mode t)
  '(show-trailing-whitespace t)
  '(sr-speedbar-auto-refresh nil)
