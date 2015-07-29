@@ -241,6 +241,7 @@
 (setq magit-git-executable "/usr/local/bin/git")
 (require 'magit-gitflow)
 (add-hook 'magit-mode-hook 'turn-on-magit-gitflow)
+(setq-default magit-push-always-verify nil)
 
 (require 'zoom-frm)
 (global-set-key (kbd "C-x C-=") 'zoom-in)
@@ -262,6 +263,7 @@
   (global-set-key (kbd "C-x C-c") 'ask-before-closing))
 
 (load-file "~/.emacs.d/heel.el")
+(load-file "~/.emacs.d/hydra.el")
 (load-file "~/.emacs.d/myjira.el")
 
 (custom-set-variables
