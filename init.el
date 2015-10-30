@@ -230,6 +230,7 @@
                       (imenu-add-menubar-index)
                       (hs-minor-mode t)))
 
+
 (load-theme 'subatomic t)
 
 (require 'kill-ring-ido)
@@ -262,6 +263,16 @@
 (when window-system
   (global-set-key (kbd "C-x C-c") 'ask-before-closing))
 
+;; store all backup and autosave files in the tmp dir
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
+;;https://github.com/purcell/exec-path-from-shell
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize))
+
 (load-file "~/.emacs.d/heel.el")
 (load-file "~/.emacs.d/hydra.el")
 (load-file "~/.emacs.d/myjira.el")
@@ -286,48 +297,11 @@
      ("verdana" "DejaVu Sans"))))
  '(font-lock-keywords-case-fold-search t t)
  '(global-font-lock-mode t nil (font-lock))
- '(ibuffer-saved-filter-groups
-   (quote
-    (("mercury"
-      ("data"
-       (filename . "\\/data\\/"))
-      ("notebook"
-       (filename . "notebook")))
-     ("datayes"
-      ("mercury"
-       (filename . "mercury"))
-      ("cr"
-       (filename . "/cr/"))
-      ("achy"
-       (filename . "achy"))
-      ("yestrap"
-       (filename . "yestrap"))
-      ("docs"
-       (filename . "doc"))
-      ("heel"
-       (filename . "heel"))))))
- '(ibuffer-saved-filters
-   (quote
-    (("gnus"
-      ((or
-        (mode . message-mode)
-        (mode . mail-mode)
-        (mode . gnus-group-mode)
-        (mode . gnus-summary-mode)
-        (mode . gnus-article-mode))))
-     ("programming"
-      ((or
-        (mode . emacs-lisp-mode)
-        (mode . cperl-mode)
-        (mode . c-mode)
-        (mode . java-mode)
-        (mode . idl-mode)
-        (mode . lisp-mode)))))))
  '(js2-include-browser-externs t)
  '(js2-include-node-externs t)
  '(package-selected-packages
    (quote
-    (discover-js2-refactor undo-tree handlebars-sgml-mode swiper hydra zoom-frm web-mode w3m w3 subatomic-theme sos smex recentf-ext powerline popwin noflet nginx-mode mustache-mode markdown-mode magit-gitflow lua-mode less-css-mode kill-ring-ido keyfreq jsx-mode json-mode js3-mode indent-guide ido-vertical-mode hungry-delete hackernews go-eldoc flx-ido emmet-mode company browse-kill-ring bookmark+ base16-theme auto-complete anaphora amd-mode ag)))
+    (exec-path-from-shell moe-theme direx ibuffer-vc discover-js2-refactor undo-tree handlebars-sgml-mode swiper hydra zoom-frm web-mode w3m w3 subatomic-theme smex recentf-ext powerline popwin noflet nginx-mode mustache-mode markdown-mode magit-gitflow lua-mode less-css-mode kill-ring-ido keyfreq jsx-mode json-mode js3-mode indent-guide ido-vertical-mode hungry-delete go-eldoc flx-ido emmet-mode company browse-kill-ring bookmark+ base16-theme auto-complete anaphora amd-mode ag)))
  '(show-paren-mode t)
  '(show-trailing-whitespace t)
  '(sr-speedbar-auto-refresh nil)
