@@ -74,8 +74,6 @@
 (require 'package)
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/") t)
-(add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (package-initialize)
 
 (when (not package-archive-contents)
@@ -101,7 +99,6 @@
                       magit
                       recentf-ext
                       ido-vertical-mode
-                      kill-ring-ido
                       hungry-delete
                       powerline
                       zoom-frm
@@ -163,6 +160,14 @@
 (smex-initialize)
 (global-set-key (kbd "M-x") 'smex)
 (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+
+(add-hook 'rust-mode-hook #'racer-mode)
+(add-hook 'racer-mode-hook #'eldoc-mode)
+(add-hook 'racer-mode-hook #'company-mode)
+
+(require 'rust-mode)
+(define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+(setq company-tooltip-align-annotations t)
 
 (require 'js2-mode)
 (add-to-list 'ac-modes 'js2-mode)
@@ -232,11 +237,11 @@
                       (hs-minor-mode t)))
 
 
-(load-theme 'subatomic t)
+(load-theme 'dracula t)
 
-(require 'kill-ring-ido)
-(global-set-key (kbd "M-y") 'kill-ring-ido)
-(setq kill-ring-ido-shortage-length 18)
+;; (require 'kill-ring-ido)
+;; (global-set-key (kbd "M-y") 'kill-ring-ido)
+;; (setq kill-ring-ido-shortage-length 18)
 
 (require 'magit)
 (set-variable 'magit-emacsclient-executable "/Applications/Emacs.app/Contents/MacOS/bin/emacsclient")
@@ -248,8 +253,6 @@
 (require 'zoom-frm)
 (global-set-key (kbd "C-x C-=") 'zoom-in)
 (global-set-key (kbd "C-x C--") 'zoom-out)
-
-(projectile-global-mode)
 
 ;; exit confirm
 (defun ask-before-closing ()
@@ -274,9 +277,28 @@
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
 
-(load-file "~/.emacs.d/heel.el")
-(load-file "~/.emacs.d/hydra.el")
-(load-file "~/.emacs.d/myjira.el")
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((python . t) (restclient . t)))
+
+(add-hook 'restclient-response-loaded-hook
+          (defun jordon-restclient-delete-headers-when-ok ()
+            (when (equal major-mode 'js-mode)
+              (save-excursion
+                (goto-char (point-max))
+                (when (and (search-backward "200 OK" nil t)
+                           (search-backward "}" nil t))
+                  (forward-char 1)
+                  (delete-region (point) (point-max))
+                  (json-mode))))))
+
+(defun org-babel-restclient-wrap-result ()
+  "Wrap the contents of the buffer in an `org-mode' src block."
+  (let ((mode-name (substring (symbol-name major-mode) 0 -5)))
+    (insert (format "#+BEGIN_SRC %s\n" mode-name))
+    (goto-char (point-max))
+    (insert "\n#+END_SRC\n")
+    (buffer-string)))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -300,9 +322,13 @@
  '(global-font-lock-mode t nil (font-lock))
  '(js2-include-browser-externs t)
  '(js2-include-node-externs t)
+ '(org-babel-python-command "python3")
+ '(org-babel-python-mode (quote python-mode))
+ '(org-confirm-babel-evaluate nil)
+ '(org-src-fontify-natively t)
  '(package-selected-packages
    (quote
-    (exec-path-from-shell moe-theme direx ibuffer-vc discover-js2-refactor undo-tree handlebars-sgml-mode swiper hydra zoom-frm web-mode w3m w3 subatomic-theme smex recentf-ext powerline popwin noflet nginx-mode mustache-mode markdown-mode magit-gitflow lua-mode less-css-mode kill-ring-ido keyfreq jsx-mode json-mode js3-mode indent-guide ido-vertical-mode hungry-delete go-eldoc flx-ido emmet-mode company browse-kill-ring bookmark+ base16-theme auto-complete anaphora amd-mode ag)))
+    (racer cargo dracula-theme rust-playground rust-mode ob-restclient ob-http restclient rjsx-mode flycheck-flow exec-path-from-shell moe-theme direx ibuffer-vc discover-js2-refactor undo-tree handlebars-sgml-mode swiper hydra zoom-frm web-mode w3m w3 subatomic-theme smex recentf-ext powerline popwin noflet nginx-mode mustache-mode markdown-mode magit-gitflow lua-mode less-css-mode kill-ring-ido keyfreq jsx-mode json-mode js3-mode indent-guide ido-vertical-mode hungry-delete go-eldoc flx-ido emmet-mode company browse-kill-ring bookmark+ base16-theme auto-complete anaphora amd-mode ag)))
  '(show-paren-mode t)
  '(show-trailing-whitespace t)
  '(sr-speedbar-auto-refresh nil)
