@@ -1,0 +1,8 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: type for react props
+# key: ip
+# --
+
+interface Props {
+  $0
+}

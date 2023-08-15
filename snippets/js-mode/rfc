@@ -1,0 +1,8 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: React Function Component
+# key: rfc
+# --
+
+export function ${1:`(file-name-base buffer-file-name)`}(): JSX.Element {
+  return <div></div>;$0
+}
