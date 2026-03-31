@@ -1,4 +1,7 @@
-(add-to-list 'exec-path (concat (getenv "HOME") "/.local/bin"))
+(setq url-proxy-services
+      '(("http"     . "127.0.0.1:1080")
+        ("https"    . "127.0.0.1:1080")
+        ("no_proxy" . "^\\(localhost\\|10.*\\)")))
 
 (require 'bind-key)
 (global-set-key (kbd "C-t") 'set-mark-command)
@@ -10,11 +13,12 @@
 (setq-default make-backup-files nil)
 (setq-default indent-tabs-mode nil)
 (setq tab-always-indent nil)
-(setq tab-width 2)
+(setq tab-width 4)
 (setq kill-whole-line t)
 (fset 'yes-or-no-p 'y-or-n-p)
 (setq electric-indent-inhibit t)
 (setq dired-listing-switches "-aBhl --group-directories-first")
+(setq vc-follow-symlinks t)
 
 ;; move lock files like .#abc.js to tmp
 (setq lock-file-name-transforms
@@ -22,8 +26,8 @@
 
 (setq ibuffer-expert t)
 (add-hook 'ibuffer-mode-hook
-	        '(lambda ()
-	           (ibuffer-auto-mode 1)))
+	  '(lambda ()
+	     (ibuffer-auto-mode 1)))
 
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
@@ -77,18 +81,7 @@
   :init
   (projectile-mode +1)
   :config
-  (setq projectile-project-search-path '("~/src/" "~/work/" ("~/github" . 1)))
-  (projectile-register-project-type 'npm '("package-lock.json")
-				    :compile "npm build"
-				    :test "npm test"
-				    :run "npm start")
-  (projectile-register-project-type 'yarn '("yarn.lock")
-				    :compile "yarn build"
-				    :test "yarn run test"
-				    :run "yarn run start")
-  :bind (:map projectile-mode-map
-              ("C-c p" . projectile-command-map)
-	      ("C-x f" . projectile-find-file)))
+  (setq projectile-project-search-path '("~/src/" "~/work/" ("~/github" . 1))))
 
 (use-package ibuffer-vc
   :config
@@ -102,6 +95,8 @@
 (use-package editorconfig
   :config
   (editorconfig-mode 1))
+
+(use-package dtrt-indent)
 
 ;; which key
 (use-package which-key
@@ -128,9 +123,6 @@
          (web-mode . smartparens-mode)
          (elisp . smartparens-mode)))
 
-;; flycheck print errors more than 1 line, which flymake don't
-(use-package flycheck)
-
 ;; Vertico
 (use-package vertico
   :init
@@ -143,7 +135,8 @@
 
 (use-package recentf
   :init
-  (recentf-mode))
+  (recentf-mode)
+  :bind ("C-x f" . recentf))
 
 (use-package yasnippet
   :config
@@ -151,20 +144,83 @@
 
 (use-package yasnippet-snippets)
 
+(use-package exec-path-from-shell
+  :if (memq window-system '(mac ns x))
+  :config
+  (setq exec-path-from-shell-debug t)
+  ;; Tell it exactly which shell to use
+  (setq exec-path-from-shell-shell-name "/usr/bin/fish")
+  ;; -l -i ensures it reads your config.fish where fnm lives
+  (setq exec-path-from-shell-arguments '("-l" "-i"))
+  ;; Sync both PATH and any specific fnm variables
+  (exec-path-from-shell-copy-envs '("PATH" "FNM_MULTISHELL_PATH"))
+  (exec-path-from-shell-initialize))
+
+(use-package add-node-modules-path
+  :custom
+  (add-node-modules-path-command '("pnpm bin")))
+
+;; Map extensions to the Tree-sitter modes
+(add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-ts-mode))
+
+(use-package treesit-auto
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
+
+(progn
+  (defun my/add-node-path-hook ()
+    (add-node-modules-path)
+    (eglot-ensure))
+
+  (add-hook 'typescript-ts-mode-hook #'my/add-node-path-hook)
+  (add-hook 'tsx-ts-mode-hook #'my/add-node-path-hook)
+  (add-hook 'css-ts-mode-hook #'my/add-node-path-hook)
+  (add-hook 'js-ts-mode-hook #'my/add-node-path-hook)
+  (add-hook 'json-ts-mode-hook #'my/add-node-path-hook)
+  (add-hook 'yaml-ts-mode-hook #'my/add-node-path-hook))
+
 (use-package eglot
   :config
   (add-to-list 'eglot-server-programs
-               '(web-mode . ("typescript-language-server" "--stdio")))
+               '((js-mode tsx-ts-mode typescript-ts-mode) .
+                 ("rass" "--"
+                  "pnpm" "typescript-language-server" "--stdio" "--"
+                  "pnpm" "oxlint" "--lsp")))
   :bind (
 	 ("C-." . eglot-code-actions)))
 
 (with-eval-after-load 'eglot
-   (setq completion-category-defaults nil))
+  (setq completion-category-defaults nil))
 
 (setq completion-styles '(basic substring partial-completion flex)
       read-file-name-completion-ignore-case t
       read-buffer-completion-ignore-case t
       completion-ignore-case t)
+
+(use-package reformatter
+  :config
+  ;; Define the formatter
+  (reformatter-define oxfmt
+    :program "oxfmt"
+    :args (list "--stdin-filepath" (buffer-file-name) "-")
+    :lighter " Oxfmt")
+
+  ;; Enable it automatically for specific modes
+  (add-hook 'css-ts-mode-hook #'oxfmt-on-save-mode)
+  (add-hook 'typescript-ts-mode-hook #'oxfmt-on-save-mode)
+  (add-hook 'js-ts-mode-hook #'oxfmt-on-save-mode)
+  (add-hook 'json-ts-mode-hook #'oxfmt-on-save-mode)
+  (add-hook 'tsx-ts-mode-hook #'oxfmt-on-save-mode)
+  (add-hook 'yaml-ts-mode-hook #'oxfmt-on-save-mode))
+
 
 (use-package corfu
   :custom
@@ -173,13 +229,6 @@
   (corfu-preview-current nil)
   :init
   (global-corfu-mode))
-
-;; ;; A few more useful configurations...
-(use-package emacs
-  :init
-  ;; Enable indentation+completion using the TAB key.
-  ;; `completion-at-point' is often bound to M-TAB.
-  (setq tab-always-indent 'complete))
 
 (use-package cape
   :init
@@ -259,119 +308,12 @@
 (set-face-attribute 'mode-line nil :family "JetBrains Mono" :height 120)
 (set-face-attribute 'mode-line-inactive nil :family "JetBrains Mono" :height 120)
 
-;; lsp
-(use-package lsp-mode
-  :init
-  (setq lsp-keymap-prefix "C-c l")
-  (defun my/lsp-mode-setup-completion ()
-    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-          '(flex))) ;; Configure flex
-  :hook (
-	 (lsp-completion-mode . my/lsp-mode-setup-completion)
-         (javascript-mode . lsp-deferred)
-         (web-mode . lsp-deferred)
-	 (gdscript-mode . lsp-deferred)
-         (js2-mode . lsp-deferred)
-         (lsp-mode . lsp-enable-which-key-integration))
-  :commands (lsp lsp-deferred)
-  :custom
-  (lsp-eslint-auto-fix-on-save t)
-  ;; (lsp-eslint-trace-server "on")
-  (lsp-clients-typescript-prefer-use-project-ts-server t)
-  ;; (lsp-clients-typescript-server-args '("--stdio" "--tsserver-log-file" "/dev/stderr"))
-  (lsp-completion-provider :none) ;; we use Corfu!
-  :config
-  ;; (setq lsp-log-io t)
-  (setq lsp-signature-render-documentation nil)
-  (setq lsp-completion-provider :none)
-  (setq lsp-idle-delay 0.500)
-  (setq lsp-javascript-display-inlay-hints t)
-  :bind (
-	 ("C-." . lsp-execute-code-action)))
-
-;; (use-package lsp-ui
-;;   :commands lsp-ui-mode
-;;   :config
-;;   (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-;;   (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
-;;   :custom
-;;   (lsp-ui-peek-enable t)
-;;   (lsp-ui-doc-show-with-cursor t)
-;;   (lsp-ui-doc-show-with-mouse t)
-;;   (lsp-ui-doc-position 'at-point)
-;;   (lsp-ui-doc-delay 1))
-
-(defun lsp--eslint-before-save (orig-fun)
-  "Run lsp-eslint-apply-all-fixes and then run the original lsp--before-save."
-  (when lsp-eslint-auto-fix-on-save (lsp-eslint-fix-all))
-  (funcall orig-fun))
-
-(advice-add 'lsp--before-save :around #'lsp--eslint-before-save)
-
-;; (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
-;; (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
-
-(use-package web-mode
-  :mode (("\\.js\\'" . web-mode)
-         ("\\.jsx\\'" . web-mode)
-         ("\\.ts\\'" . web-mode)
-         ("\\.tsx\\'" . web-mode)
-         ("\\.html\\'" . web-mode)
-         ("\\.vue\\'" . web-mode)
-         ("\\.json\\'" . web-mode)
-	 ("\\.astro\\'" . web-mode))
-  :commands web-mode
-  :config
-  (setq web-mode-content-types-alist
-        '(("jsx" . "\\.js[x]?\\'")))
-  (setq web-mode-enable-auto-quoting nil)
-  (setq web-mode-enable-auto-indentation nil)
-  (setq web-mode-enable-current-element-highlight t)
-  (setq web-mode-enable-front-matter-block t)
-  :custom
-  (web-mode-markup-indent-offset 2)
-  (web-mode-css-indent-offset 2)
-  (web-mode-code-indent-offset 2))
-
-(use-package lsp-treemacs
-  :init
-  (lsp-treemacs-sync-mode 1))
-
 (use-package emmet-mode
   :hook (
          (web-mode . emmet-mode)
          (css-mode . emmet-mode)
          (scss-mode . emmet-mode))
   )
-
-(use-package prettier
-  :init
-  (global-prettier-mode)
-  :hook (
-         (web-mode . prettier-mode)))
-
-(use-package flow-minor-mode
-  :hook (
-	 (web-mode . flow-minor-enable-automatically)))
-
-(use-package add-node-modules-path
-  :config
-  ;; automatically run the function when web-mode starts
-  (eval-after-load 'web-mode
-    '(add-hook 'web-mode-hook 'add-node-modules-path)))
-
-(use-package restclient
-  :mode (
-         ("\\.http\\'" . restclient-mode)))
-(use-package company-restclient
-  :config
-  (add-hook 'restclient-mode-hook
-            (lambda ()
-              (set (make-local-variable 'company-backends) '(company-restclient))
-	      (company-fuzzy-mode 0))))
-(defun http ()
-  (interactive)
-  (switch-to-buffer (find-file "~/requests.http")))
 
 (use-package fish-mode
   :mode (
@@ -393,101 +335,26 @@
   :config
   (setq markdown-preview-stylesheets (list "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css")))
 
-(use-package bison-mode
-  :mode (("\\.bison" . bison-mode)
-	 ("\\.jison" . bison-mode)))
-
-(use-package rust-mode
-  :config
-  (setq rust-format-on-save t)
-  :mode (("\\.rs" . rust-mode)))
-
-(use-package sql-indent
-  :hook (
-	 (sql-mode . sqlind-minor-mode)))
-
 (use-package dotenv-mode
   :mode (("\\.env" . dotenv-mode)))
-
-;; (use-package indent-bars
-;;   :load-path "~/github/indent-bars/"
-;;   :config
-;;   (setq indent-tabs-mode nil)
-;;   :hook ((web-mode) . indent-bars-mode)) ; or whichever modes you prefer
-
-(use-package dired-rainbow
-  :config
-  (progn
-    (dired-rainbow-define-chmod directory "#6cb2eb" "d.*")
-    (dired-rainbow-define html "#eb5286" ("css" "less" "sass" "scss" "htm" "html" "jhtm" "mht" "eml" "mustache" "xhtml"))
-    (dired-rainbow-define xml "#f2d024" ("xml" "xsd" "xsl" "xslt" "wsdl" "bib" "json" "msg" "pgn" "rss" "yaml" "yml" "rdata"))
-    (dired-rainbow-define document "#9561e2" ("docm" "doc" "docx" "odb" "odt" "pdb" "pdf" "ps" "rtf" "djvu" "epub" "odp" "ppt" "pptx"))
-    (dired-rainbow-define markdown "#ffed4a" ("org" "etx" "info" "markdown" "md" "mkd" "nfo" "pod" "rst" "tex" "textfile" "txt"))
-    (dired-rainbow-define database "#6574cd" ("xlsx" "xls" "csv" "accdb" "db" "mdb" "sqlite" "nc"))
-    (dired-rainbow-define media "#de751f" ("mp3" "mp4" "MP3" "MP4" "avi" "mpeg" "mpg" "flv" "ogg" "mov" "mid" "midi" "wav" "aiff" "flac"))
-    (dired-rainbow-define image "#f66d9b" ("tiff" "tif" "cdr" "gif" "ico" "jpeg" "jpg" "png" "psd" "eps" "svg"))
-    (dired-rainbow-define log "#c17d11" ("log"))
-    (dired-rainbow-define shell "#f6993f" ("awk" "bash" "bat" "sed" "sh" "zsh" "vim"))
-    (dired-rainbow-define interpreted "#38c172" ("py" "ipynb" "rb" "pl" "t" "msql" "mysql" "pgsql" "sql" "r" "clj" "cljs" "scala" "js" "jsx" "ts" "tsx"))
-    (dired-rainbow-define compiled "#4dc0b5" ("asm" "cl" "lisp" "el" "c" "h" "c++" "h++" "hpp" "hxx" "m" "cc" "cs" "cp" "cpp" "go" "f" "for" "ftn" "f90" "f95" "f03" "f08" "s" "rs" "hi" "hs" "pyc" ".java"))
-    (dired-rainbow-define executable "#8cc4ff" ("exe" "msi"))
-    (dired-rainbow-define compressed "#51d88a" ("7z" "zip" "bz2" "tgz" "txz" "gz" "xz" "z" "Z" "jar" "war" "ear" "rar" "sar" "xpi" "apk" "xz" "tar"))
-    (dired-rainbow-define packaged "#faad63" ("deb" "rpm" "apk" "jad" "jar" "cab" "pak" "pk3" "vdf" "vpk" "bsp"))
-    (dired-rainbow-define encrypted "#ffed4a" ("gpg" "pgp" "asc" "bfe" "enc" "signature" "sig" "p12" "pem"))
-    (dired-rainbow-define fonts "#6cb2eb" ("afm" "fon" "fnt" "pfb" "pfm" "ttf" "otf"))
-    (dired-rainbow-define partition "#e3342f" ("dmg" "iso" "bin" "nrg" "qcow" "toast" "vcd" "vmdk" "bak"))
-    (dired-rainbow-define vc "#0074d9" ("git" "gitignore" "gitattributes" "gitmodules"))
-    (dired-rainbow-define-chmod executable-unix "#38c172" "-.*x.*")
-    ))
-
-(use-package restclient
-  :mode (("\\.http" . restclient-mode)))
-
-(use-package gdscript-mode
-  :mode (("\\.gd" . gdscript-mode))
-  :init
-  (setq gdscript-indent-offset 4)
-  (setq gdscript-godot-executable "/usr/bin/godot")
-  (setq gdscript-gdformat-executable "/home/leodt/.local/bin/gdformat")
-  (setq gdscript-gdformat-save-and-format t))
-
-(use-package lsp-prisma
-  :load-path "packages/prisma/")
-(use-package prisma-mode
-  :load-path "packages/prisma/")
 
 (use-package dirvish
   :init
   (dirvish-override-dired-mode))
 
-(defun lsp--gdscript-ignore-errors (original-function &rest args)
-  "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
-  (if (string-equal major-mode "gdscript-mode")
-      (let ((json-data (nth 0 args)))
-        (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
-                 (not (gethash "id" json-data nil))
-                 (not (gethash "method" json-data nil)))
-            nil ; (message "Method not found")
-          (apply original-function args)))
-    (apply original-function args)))
-;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
-(advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
-
-;; font
 (defun my/set-fonts ()
   (interactive)
   (setq use-default-font-for-symbols nil)
-  (set-face-attribute 'default nil :family "JetBrains Mono" :height 120)
-  (set-fontset-font t 'han (font-spec :family "Noto Sans CJK SC" :height 120) nil 'append)
-  (setq face-font-rescale-alist '(("Noto Sans CJK SC" . 1.2)))
+  (set-face-attribute 'default nil :family "JetBrains Mono" :height 150)
+  (set-fontset-font t 'han (font-spec :family "Noto Sans CJK SC" :height 150) nil 'append)
+  (setq face-font-rescale-alist '(("Noto Sans CJK SC" . 0.93)))
   (set-fontset-font t 'symbol "Noto Color Emoji" nil 'append))
 
 (add-hook 'after-make-frame-functions #'(lambda (frame)
-					 (select-frame frame)
-					 (when (display-graphic-p frame)
-					   (my/set-fonts))))
+					  (select-frame frame)
+					  (when (display-graphic-p frame)
+					    (my/set-fonts))))
 (add-hook 'window-setup-hook 'my/set-fonts)
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -496,103 +363,13 @@
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
-   ["#2e3436" "#a40000" "#4e9a06" "#c4a000" "#204a87" "#5c3566" "#729fcf" "#eeeeec"])
- '(connection-local-criteria-alist
-   '(((:application tramp)
-      tramp-connection-local-default-system-profile tramp-connection-local-default-shell-profile)))
- '(connection-local-profile-alist
-   '((tramp-connection-local-darwin-ps-profile
-      (tramp-process-attributes-ps-args "-acxww" "-o" "pid,uid,user,gid,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state=abcde" "-o" "ppid,pgid,sess,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etime,pcpu,pmem,args")
-      (tramp-process-attributes-ps-format
-       (pid . number)
-       (euid . number)
-       (user . string)
-       (egid . number)
-       (comm . 52)
-       (state . 5)
-       (ppid . number)
-       (pgrp . number)
-       (sess . number)
-       (ttname . string)
-       (tpgid . number)
-       (minflt . number)
-       (majflt . number)
-       (time . tramp-ps-time)
-       (pri . number)
-       (nice . number)
-       (vsize . number)
-       (rss . number)
-       (etime . tramp-ps-time)
-       (pcpu . number)
-       (pmem . number)
-       (args)))
-     (tramp-connection-local-busybox-ps-profile
-      (tramp-process-attributes-ps-args "-o" "pid,user,group,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "stat=abcde" "-o" "ppid,pgid,tty,time,nice,etime,args")
-      (tramp-process-attributes-ps-format
-       (pid . number)
-       (user . string)
-       (group . string)
-       (comm . 52)
-       (state . 5)
-       (ppid . number)
-       (pgrp . number)
-       (ttname . string)
-       (time . tramp-ps-time)
-       (nice . number)
-       (etime . tramp-ps-time)
-       (args)))
-     (tramp-connection-local-bsd-ps-profile
-      (tramp-process-attributes-ps-args "-acxww" "-o" "pid,euid,user,egid,egroup,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" "-o" "state,ppid,pgid,sid,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etimes,pcpu,pmem,args")
-      (tramp-process-attributes-ps-format
-       (pid . number)
-       (euid . number)
-       (user . string)
-       (egid . number)
-       (group . string)
-       (comm . 52)
-       (state . string)
-       (ppid . number)
-       (pgrp . number)
-       (sess . number)
-       (ttname . string)
-       (tpgid . number)
-       (minflt . number)
-       (majflt . number)
-       (time . tramp-ps-time)
-       (pri . number)
-       (nice . number)
-       (vsize . number)
-       (rss . number)
-       (etime . number)
-       (pcpu . number)
-       (pmem . number)
-       (args)))
-     (tramp-connection-local-default-shell-profile
-      (shell-file-name . "/bin/sh")
-      (shell-command-switch . "-c"))
-     (tramp-connection-local-default-system-profile
-      (path-separator . ":")
-      (null-device . "/dev/null"))))
- '(custom-safe-themes
-   '("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default))
- '(package-selected-packages
-   '(flycheck transpose-frame sql-indent dap-mode eglot w3m js2-mode js-mode dotenv-mode bison-mode ibuffer-vc markdown-preview-mode embark-consult embark smartparens dired-rainbow multiple-cursors yaml-mode restclient company-fuzzy projectile yasnippet yasnippets add-node-modules-path flow-minor-mode emmet-mode prettier web-mode editorconfig lsp-ui unicode-fonts dracula-theme dracula magit rg which-key wgrep vertico use-package popup orderless marginalia consult company async))
- '(safe-local-variable-values
-   '((eval add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]dist")
-     (eval add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]public")
-     (eval let
-           ((project-directory
-             (car
-              (dir-locals-find-file default-directory))))
-           (setq lsp-clients-typescript-server-args
-                 `("--tsserver-path" ,(concat project-directory ".yarn/sdks/typescript/bin/tsserver")
-                   "--stdio")))))
- '(warning-suppress-log-types '((jsonrpc)))
- '(warning-suppress-types '((jsonrpc))))
+   ["#2e3436" "#a40000" "#4e9a06" "#c4a000" "#204a87" "#5c3566" "#729fcf"
+    "#eeeeec"])
+ '(dtrt-indent-global-mode t)
+ '(package-selected-packages nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-(put 'dired-find-alternate-file 'disabled nil)
