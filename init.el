@@ -1,3 +1,5 @@
+(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+
 (setq url-proxy-services
       '(("http"     . "127.0.0.1:1080")
         ("https"    . "127.0.0.1:1080")
@@ -24,10 +26,7 @@
 (setq lock-file-name-transforms
       '(("\\`/.*/\\([^/]+\\)\\'" "/var/tmp/\\1" t)))
 
-(setq ibuffer-expert t)
-(add-hook 'ibuffer-mode-hook
-	  '(lambda ()
-	     (ibuffer-auto-mode 1)))
+(require 'init-ibuffer)
 
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
@@ -167,6 +166,7 @@
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.html\\'" . html-ts-mode))
 
 (use-package treesit-auto
   :custom
@@ -241,7 +241,8 @@
 (use-package consult
   :bind (
 	 ("C-x b" . consult-buffer)
-	 ("M-y" . consult-yank-pop))
+	 ("M-y" . consult-yank-pop)
+         ("C-M-g" . consult-yank-pop))
   :config
   (setq consult-preview-key "M-.")
   (setq consult-project-root-function #'projectile-project-root))
@@ -312,8 +313,10 @@
   :hook (
          (web-mode . emmet-mode)
          (css-mode . emmet-mode)
-         (scss-mode . emmet-mode))
-  )
+         (scss-mode . emmet-mode)
+         (tsx-ts-mode . emmet-mode))
+  :config
+        (add-to-list 'emmet-jsx-major-modes 'tsx-ts-mode))
 
 (use-package fish-mode
   :mode (
@@ -366,7 +369,16 @@
    ["#2e3436" "#a40000" "#4e9a06" "#c4a000" "#204a87" "#5c3566" "#729fcf"
     "#eeeeec"])
  '(dtrt-indent-global-mode t)
- '(package-selected-packages nil))
+ '(dtrt-indent-verbosity 3)
+ '(package-selected-packages
+   '(add-node-modules-path cape corfu diff-hl dirvish doom-modeline
+                           dotenv-mode dracula-theme dtrt-indent
+                           embark-consult emmet-mode
+                           exec-path-from-shell fish-mode ibuffer-vc
+                           magit marginalia markdown-preview-mode
+                           multiple-cursors projectile reformatter rg
+                           smartparens treesit-auto vertico yaml-mode
+                           yasnippet-snippets)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
