@@ -112,16 +112,6 @@
          ("C-d" . mc/mark-next-like-this)
          ("M-<mouse-1>" . mc/add-cursor-on-click)))
 
-(use-package smartparens
-  :bind (
-         ("C-M-f" . sp-forward-sexp)
-         ("C-M-b" . sp-backward-sexp)
-         ("C-M-n" . sp-next-sexp)
-         ("C-M-p" . sp-previous-sexp))
-  :hook (
-         (web-mode . smartparens-mode)
-         (elisp . smartparens-mode)))
-
 ;; Vertico
 (use-package vertico
   :init
@@ -188,12 +178,12 @@
   (add-hook 'yaml-ts-mode-hook #'my/add-node-path-hook))
 
 (use-package eglot
-  :config
-  (add-to-list 'eglot-server-programs
-               '((js-mode tsx-ts-mode typescript-ts-mode) .
-                 ("rass" "--"
-                  "pnpm" "typescript-language-server" "--stdio" "--"
-                  "pnpm" "oxlint" "--lsp")))
+  ;; :config
+  ;; (add-to-list 'eglot-server-programs
+  ;;              '((js-mode tsx-ts-mode typescript-ts-mode) .
+  ;;                ("rass" "--"
+  ;;                 "pnpm" "typescript-language-server" "--stdio" "--"
+  ;;                 "pnpm" "oxlint" "--lsp")))
   :bind (
 	 ("C-." . eglot-code-actions)))
 
@@ -287,7 +277,10 @@
 (use-package wgrep)
 
 ;; magit
-(use-package magit)
+(use-package magit
+  :ensure t
+  :bind (:map magit-file-section-map ("RET" . magit-diff-visit-file-other-window)
+         :map magit-hunk-section-map ("RET" . magit-diff-visit-file-other-window)))
 
 (use-package diff-hl
   :init
@@ -296,7 +289,14 @@
 ;; dracula theme
 (use-package dracula-theme
   :init
-  (load-theme 'dracula t))
+  ;;(load-theme 'dracula t)
+  )
+
+;; dracula theme
+(use-package alucard-theme
+  :load-path "~/.emacs.d/lisp/"
+  :init
+  (load-theme 'alucard t))
 
 ;; mode line
 (use-package doom-modeline
@@ -345,6 +345,22 @@
   :init
   (dirvish-override-dired-mode))
 
+(use-package treemacs
+  :ensure t
+  :defer t)
+
+(use-package treemacs-projectile
+  :after (treemacs projectile)
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once)
+  :ensure t)
+
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
+
 (defun my/set-fonts ()
   (interactive)
   (setq use-default-font-for-symbols nil)
@@ -368,17 +384,14 @@
  '(ansi-color-names-vector
    ["#2e3436" "#a40000" "#4e9a06" "#c4a000" "#204a87" "#5c3566" "#729fcf"
     "#eeeeec"])
+ '(custom-safe-themes
+   '("5202a104dd97337ced9e7350725ba28fb700f640f619ca2e130203994be91af0"
+     "84749a6b10cdc36cec5014f3210ba0b01d988c7a44f058796be42499164ae6a0"
+     "bcc103f8e03496d689a1c2d6166b3031f3893cdf13d571ef4463b68ecc393c8e"
+     default))
  '(dtrt-indent-global-mode t)
  '(dtrt-indent-verbosity 3)
- '(package-selected-packages
-   '(add-node-modules-path cape corfu diff-hl dirvish doom-modeline
-                           dotenv-mode dracula-theme dtrt-indent
-                           embark-consult emmet-mode
-                           exec-path-from-shell fish-mode ibuffer-vc
-                           magit marginalia markdown-preview-mode
-                           multiple-cursors projectile reformatter rg
-                           smartparens treesit-auto vertico yaml-mode
-                           yasnippet-snippets)))
+ '(package-selected-packages nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
