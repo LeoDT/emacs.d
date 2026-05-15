@@ -10,6 +10,7 @@
 (bind-key* (kbd "M-<tab>") 'other-window)
 (global-set-key (kbd "C-x C-k") 'kill-current-buffer)
 (global-set-key (kbd "C-x C-b") 'ibuffer-other-window)
+(global-unset-key (kbd "C-SPC"))
 
 ;; config
 (setq-default make-backup-files nil)
@@ -21,10 +22,14 @@
 (setq electric-indent-inhibit t)
 (setq dired-listing-switches "-aBhl --group-directories-first")
 (setq vc-follow-symlinks t)
+(global-auto-revert-mode 1)
 
 ;; move lock files like .#abc.js to tmp
 (setq lock-file-name-transforms
       '(("\\`/.*/\\([^/]+\\)\\'" "/var/tmp/\\1" t)))
+
+(setq auto-save-file-name-transforms
+      `((".*" "~/.emacs.d/auto-saves/" t)))
 
 (require 'init-ibuffer)
 
@@ -279,8 +284,13 @@
 ;; magit
 (use-package magit
   :ensure t
-  :bind (:map magit-file-section-map ("RET" . magit-diff-visit-file-other-window)
+  :bind (
+         :map magit-file-section-map ("RET" . magit-diff-visit-file-other-window)
          :map magit-hunk-section-map ("RET" . magit-diff-visit-file-other-window)))
+
+;; local package
+(require 'magit-filenotify)
+(add-hook 'magit-status-mode-hook 'magit-filenotify-mode)
 
 (use-package diff-hl
   :init
@@ -292,11 +302,9 @@
   ;;(load-theme 'dracula t)
   )
 
-;; dracula theme
-(use-package alucard-theme
-  :load-path "~/.emacs.d/lisp/"
-  :init
-  (load-theme 'alucard t))
+;; local package
+(require 'alucard-theme)
+(load-theme 'alucard t)
 
 ;; mode line
 (use-package doom-modeline
@@ -336,7 +344,7 @@
 
 (use-package markdown-preview-mode
   :config
-  (setq markdown-preview-stylesheets (list "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css")))
+  (setq markdown-preview-stylesheets (list "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.9.0/github-markdown-light.min.css")))
 
 (use-package dotenv-mode
   :mode (("\\.env" . dotenv-mode)))
@@ -347,7 +355,12 @@
 
 (use-package treemacs
   :ensure t
-  :defer t)
+  :defer t
+  :config
+  (setq treemacs-indentation 1) ; 2 spaces, 10 pixels wide
+  (setq treemacs-move-files-by-mouse-dragging nil) ; disable dragging
+  :bind
+  ("C-c t" . treemacs-select-window))
 
 (use-package treemacs-projectile
   :after (treemacs projectile)
@@ -360,6 +373,19 @@
 (use-package treemacs-magit
   :after (treemacs magit)
   :ensure t)
+
+(treemacs-start-on-boot)
+
+(use-package ace-window
+  :ensure
+  :config (setq aw-dispatch-always t)
+  :bind ("M-o" . ace-window))
+
+(use-package golden-ratio
+  :init (golden-ratio-mode 1)
+  :config (setq golden-ratio-auto-scale t
+                golden-ratio-adjust-factor .8
+                golden-ratio-wide-adjust-factor .8))
 
 (defun my/set-fonts ()
   (interactive)
@@ -391,7 +417,17 @@
      default))
  '(dtrt-indent-global-mode t)
  '(dtrt-indent-verbosity 3)
- '(package-selected-packages nil))
+ '(package-selected-packages
+   '(add-node-modules-path alucard-theme cape corfu diff-hl dirvish
+                           doom-modeline dotenv-mode dracula-theme
+                           dtrt-indent embark-consult emmet-mode
+                           exec-path-from-shell fish-mode golden-ratio
+                           ibuffer-vc magit-filenotify marginalia
+                           markdown-preview-mode multiple-cursors
+                           reformatter rg smartparens
+                           treemacs-icons-dired treemacs-magit
+                           treemacs-projectile treesit-auto vertico
+                           yaml-mode yasnippet-snippets)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
