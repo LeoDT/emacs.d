@@ -14,9 +14,8 @@
 
 ;; config
 (setq-default make-backup-files nil)
-(setq-default indent-tabs-mode nil)
-(setq tab-always-indent nil)
-(setq tab-width 4)
+(setq-default indent-tabs-mode t)
+(setq tab-width 2)
 (setq kill-whole-line t)
 (fset 'yes-or-no-p 'y-or-n-p)
 (setq electric-indent-inhibit t)
@@ -52,6 +51,9 @@
                 (while (re-search-forward "\\[uU]0000" nil t)
 		  (replace-match "?")))
 	      (apply oldfn args)))
+
+(when (daemonp)
+  (setq use-package-always-demand t))
 
 ;; use-package to simplify the config file
 (unless (package-installed-p 'use-package)
@@ -96,9 +98,9 @@
                 (ibuffer-do-sort-by-alphabetic)))))
 
 ;; editorconfig
-(use-package editorconfig
-  :config
-  (editorconfig-mode 1))
+;; (use-package editorconfig
+;;   :config
+;;   (editorconfig-mode 1))
 
 (use-package dtrt-indent)
 
@@ -139,29 +141,36 @@
 (use-package yasnippet-snippets)
 
 (use-package exec-path-from-shell
-  :if (memq window-system '(mac ns x))
+  :ensure t
   :config
   (setq exec-path-from-shell-debug t)
-  ;; Tell it exactly which shell to use
-  (setq exec-path-from-shell-shell-name "/usr/bin/fish")
-  ;; -l -i ensures it reads your config.fish where fnm lives
-  (setq exec-path-from-shell-arguments '("-l" "-i"))
-  ;; Sync both PATH and any specific fnm variables
-  (exec-path-from-shell-copy-envs '("PATH" "FNM_MULTISHELL_PATH"))
-  (exec-path-from-shell-initialize))
+  :custom
+  (exec-path-from-shell-arguments '("-l" "-i"))
+  (exec-path-from-shell-shell-name "/usr/bin/fish")
+  (exec-path-from-shell-variables '("PATH" "FNM_MULTISHELL_PATH"))
+  :init
+  (exec-path-from-shell-initialize)
+  (when (daemonp)
+  (exec-path-from-shell-initialize)))
 
 (use-package add-node-modules-path
+  :ensure t
   :custom
   (add-node-modules-path-command '("pnpm bin")))
 
 ;; Map extensions to the Tree-sitter modes
 (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.json5\\'" . json5-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.html\\'" . html-ts-mode))
+
+(require 'treesit)
+(add-to-list 'treesit-language-source-alist
+             '(json5 "https://github.com/Joakker/tree-sitter-json5"))
 
 (use-package treesit-auto
   :custom
@@ -179,6 +188,7 @@
   (add-hook 'tsx-ts-mode-hook #'my/add-node-path-hook)
   (add-hook 'css-ts-mode-hook #'my/add-node-path-hook)
   (add-hook 'js-ts-mode-hook #'my/add-node-path-hook)
+  (add-hook 'json5-ts-mode-hook #'my/add-node-path-hook)
   (add-hook 'json-ts-mode-hook #'my/add-node-path-hook)
   (add-hook 'yaml-ts-mode-hook #'my/add-node-path-hook))
 
@@ -280,6 +290,11 @@
 
 ;; wgrep
 (use-package wgrep)
+
+(use-package keychain-environment
+  :ensure t
+  :config
+  (keychain-refresh-environment))
 
 ;; magit
 (use-package magit
@@ -411,7 +426,8 @@
    ["#2e3436" "#a40000" "#4e9a06" "#c4a000" "#204a87" "#5c3566" "#729fcf"
     "#eeeeec"])
  '(custom-safe-themes
-   '("5202a104dd97337ced9e7350725ba28fb700f640f619ca2e130203994be91af0"
+   '("0223215a464167d93b9cfef9b1cdf9b0768ab660f33b3068b647f7b12aa453a0"
+     "5202a104dd97337ced9e7350725ba28fb700f640f619ca2e130203994be91af0"
      "84749a6b10cdc36cec5014f3210ba0b01d988c7a44f058796be42499164ae6a0"
      "bcc103f8e03496d689a1c2d6166b3031f3893cdf13d571ef4463b68ecc393c8e"
      default))
@@ -422,12 +438,14 @@
                            doom-modeline dotenv-mode dracula-theme
                            dtrt-indent embark-consult emmet-mode
                            exec-path-from-shell fish-mode golden-ratio
-                           ibuffer-vc magit-filenotify marginalia
-                           markdown-preview-mode multiple-cursors
-                           reformatter rg smartparens
-                           treemacs-icons-dired treemacs-magit
+                           ibuffer-vc json5-ts-mode
+                           keychain-environment magit-filenotify
+                           marginalia markdown-preview-mode
+                           multiple-cursors reformatter rg smartparens
+                           systemd treemacs-icons-dired treemacs-magit
                            treemacs-projectile treesit-auto vertico
-                           yaml-mode yasnippet-snippets)))
+                           yaml-mode yasnippet-snippets))
+ '(tab-width 2))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
